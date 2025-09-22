@@ -6,9 +6,9 @@ import (
 )
 
 func main() {
-	books := []library.Book{library.Book{Title: "War and Peace", Author: "Lev Tolstoy"},
-		library.Book{Title: "Romeo and Juliet", Author: "William Shakespeare"},
-		library.Book{Title: "To the Moon and back", Author: "Jules Vern"},
+	books := []library.Book{{Title: "War and Peace", Author: "Lev Tolstoy"},
+		{Title: "Romeo and Juliet", Author: "William Shakespeare"},
+		{Title: "To the Moon and back", Author: "Jules Vern"},
 	}
 
 	lib := library.Library{}
