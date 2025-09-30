@@ -1,29 +1,35 @@
 package library
 
-import (
-	"crypto/rand"
-	"math"
-	"math/big"
-)
-
 type Library struct {
-	books   map[string]int
-	storage Storage
+	books      map[string]int
+	storage    Storage
+	generateID func(...int) int
 }
 
-func (lib *Library) generateID() int {
-	a, _ := rand.Int(rand.Reader, big.NewInt(math.MaxInt64))
-	return int(a.Int64())
-}
-
-func (lib *Library) Initialize() {
+func (lib *Library) Initialize(generateID func(...int) int, isMapStorageChosen bool) {
 	lib.books = make(map[string]int)
-	lib.storage = Storage{books: make(map[int]Book)}
+	if isMapStorageChosen {
+		lib.storage = Storage{booksMp: make(map[int]Book)}
+	} else {
+		lib.storage = Storage{booksSl: make([]Book, 0)}
+	}
+	lib.generateID = generateID
 }
 
-func (lib *Library) Clear() {
-	lib.books = make(map[string]int)
-	lib.storage.books = make(map[int]Book)
+func (lib *Library) ChangeIDGenerator(generateID func(...int) int) {
+	lib.generateID = generateID
+}
+
+func (lib *Library) ChangeStorage() {
+	if lib.storage.isMapStorageChosen {
+		lib.books = make(map[string]int)
+		lib.storage.booksMp = make(map[int]Book)
+		lib.storage.isMapStorageChosen = false
+	} else {
+		lib.books = make(map[string]int)
+		lib.storage.booksSl = make([]Book, 0)
+		lib.storage.isMapStorageChosen = true
+	}
 }
 
 func (lib *Library) GetBook(title string) Book {
@@ -31,7 +37,7 @@ func (lib *Library) GetBook(title string) Book {
 }
 
 func (lib *Library) AddBook(book *Book) {
-	book.setID(lib.generateID())
+	book.setID(lib.generateID(len(lib.books)))
 	lib.books[book.Title] = book.getID()
 	lib.storage.addBook(book)
 }

@@ -1,13 +1,28 @@
 package library
 
 type Storage struct {
-	books map[int]Book
+	booksMp            map[int]Book
+	booksSl            []Book
+	isMapStorageChosen bool
 }
 
 func (storage *Storage) getBook(id int) Book {
-	return storage.books[id]
+	if storage.isMapStorageChosen {
+		return storage.booksMp[id]
+	} else {
+		for _, book := range storage.booksSl {
+			if book.getID() == id {
+				return book
+			}
+		}
+	}
+	return Book{}
 }
 
 func (storage *Storage) addBook(book *Book) {
-	storage.books[book.id] = *book
+	if storage.isMapStorageChosen {
+		storage.booksMp[book.id] = *book
+	} else {
+		storage.booksSl = append(storage.booksSl, *book)
+	}
 }
