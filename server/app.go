@@ -64,7 +64,7 @@ func main() {
 		if rand.Intn(2)+1 == 1 {
 			w.WriteHeader(http.StatusOK)
 		} else {
-			w.WriteHeader(http.StatusBadGateway)
+			w.WriteHeader(rand.Intn(11) + 500)
 		}
 	})
 
@@ -72,10 +72,12 @@ func main() {
 		Addr:    ":8081",
 		Handler: mux,
 	}
-	er := server.ListenAndServe()
-	if er != nil {
-		log.Fatal(er)
-	}
+	go func() {
+		er := server.ListenAndServe()
+		if er != nil {
+			log.Fatal(er)
+		}
+	}()
 
 	osSignals := make(chan os.Signal, 1)
 	signal.Notify(osSignals, os.Interrupt, syscall.SIGTERM)
