@@ -75,7 +75,7 @@ func main() {
 	go func() {
 		er := server.ListenAndServe()
 		if er != nil {
-			log.Fatal(er)
+			log.Println(er)
 		}
 	}()
 
@@ -87,6 +87,6 @@ func main() {
 	defer cancel()
 	err := server.Shutdown(ctx)
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 }
