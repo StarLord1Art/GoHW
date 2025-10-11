@@ -20,19 +20,19 @@ func main() {
 	mux.HandleFunc("GET /version", func(w http.ResponseWriter, r *http.Request) {
 		_, err := w.Write([]byte("v1.0.0"))
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 	})
 
 	mux.HandleFunc("POST /decode", func(w http.ResponseWriter, r *http.Request) {
 		body, err1 := io.ReadAll(r.Body)
 		if err1 != nil {
-			log.Fatal(err1)
+			log.Println(err1)
 		}
 		defer func(Body io.ReadCloser) {
 			err := Body.Close()
 			if err != nil {
-				log.Fatal(err)
+				log.Println(err)
 			}
 		}(r.Body)
 
@@ -41,12 +41,12 @@ func main() {
 		}
 		err := json.Unmarshal(body, &data)
 		if err != nil {
-			log.Fatal(err)
+			log.Println(err)
 		}
 
 		decodedString, err2 := base64.StdEncoding.DecodeString(data.InputString)
 		if err2 != nil {
-			log.Fatal(err2)
+			log.Println(err2)
 		}
 		result := map[string]string{
 			"outputString": string(decodedString),
@@ -54,7 +54,7 @@ func main() {
 		w.Header().Set("Content-Type", "application/json")
 		err3 := json.NewEncoder(w).Encode(result)
 		if err3 != nil {
-			log.Fatal(err3)
+			log.Println(err3)
 		}
 	})
 
