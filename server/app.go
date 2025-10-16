@@ -14,68 +14,75 @@ import (
 	"time"
 )
 
+func version(w http.ResponseWriter, r *http.Request) {
+	_, err := w.Write([]byte("v1.0.0"))
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+var data struct {
+	InputString string `json:"inputString"`
+}
+
+func decode(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		log.Println(err)
+	}
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Println(err)
+		}
+	}(r.Body)
+
+	err = json.Unmarshal(body, &data)
+	if err != nil {
+		log.Println(err)
+	}
+
+	decodedString, err := base64.StdEncoding.DecodeString(data.InputString)
+	if err != nil {
+		log.Println(err)
+	}
+	result := map[string]string{
+		"outputString": string(decodedString),
+	}
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(result)
+	if err != nil {
+		log.Println(err)
+	}
+}
+
+func hardOperation(w http.ResponseWriter, r *http.Request) {
+	time.Sleep(time.Duration(rand.Intn(10)+10) * time.Second)
+
+	if rand.Intn(2)+1 == 1 {
+		w.WriteHeader(http.StatusOK)
+	} else {
+		w.WriteHeader(rand.Intn(11) + 500)
+	}
+}
+
 func main() {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("GET /version", func(w http.ResponseWriter, r *http.Request) {
-		_, err := w.Write([]byte("v1.0.0"))
-		if err != nil {
-			log.Println(err)
-		}
-	})
+	mux.HandleFunc("GET /version", version)
 
-	mux.HandleFunc("POST /decode", func(w http.ResponseWriter, r *http.Request) {
-		body, err1 := io.ReadAll(r.Body)
-		if err1 != nil {
-			log.Println(err1)
-		}
-		defer func(Body io.ReadCloser) {
-			err := Body.Close()
-			if err != nil {
-				log.Println(err)
-			}
-		}(r.Body)
+	mux.HandleFunc("POST /decode", decode)
 
-		var data struct {
-			InputString string `json:"inputString"`
-		}
-		err := json.Unmarshal(body, &data)
-		if err != nil {
-			log.Println(err)
-		}
-
-		decodedString, err2 := base64.StdEncoding.DecodeString(data.InputString)
-		if err2 != nil {
-			log.Println(err2)
-		}
-		result := map[string]string{
-			"outputString": string(decodedString),
-		}
-		w.Header().Set("Content-Type", "application/json")
-		err3 := json.NewEncoder(w).Encode(result)
-		if err3 != nil {
-			log.Println(err3)
-		}
-	})
-
-	mux.HandleFunc("GET /hard-op", func(w http.ResponseWriter, r *http.Request) {
-		time.Sleep(time.Duration(rand.Intn(10)+10) * time.Second)
-
-		if rand.Intn(2)+1 == 1 {
-			w.WriteHeader(http.StatusOK)
-		} else {
-			w.WriteHeader(rand.Intn(11) + 500)
-		}
-	})
+	mux.HandleFunc("GET /hard-op", hardOperation)
 
 	server := &http.Server{
 		Addr:    ":8081",
 		Handler: mux,
 	}
 	go func() {
-		er := server.ListenAndServe()
-		if er != nil {
-			log.Println(er)
+		err := server.ListenAndServe()
+		if err != nil {
+			log.Println(err)
 		}
 	}()
 

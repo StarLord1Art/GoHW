@@ -11,63 +11,64 @@ import (
 	"time"
 )
 
+var result struct {
+	OutputString string `json:"outputString"`
+}
+
 func main() {
 	client := &http.Client{
 		Timeout: 15 * time.Second,
 	}
 
-	res1, err1 := client.Get("http://localhost:8081/version")
-	if err1 != nil {
-		log.Println(err1)
+	res, err := client.Get("http://localhost:8081/version")
+	if err != nil {
+		log.Println(err)
 	}
-	body1, err2 := io.ReadAll(res1.Body)
-	if err2 != nil {
-		log.Println(err2)
+	body, err := io.ReadAll(res.Body)
+	if err != nil {
+		log.Println(err)
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
 			log.Println(err)
 		}
-	}(res1.Body)
-	fmt.Println(string(body1))
+	}(res.Body)
+	fmt.Println(string(body))
 
 	jsonData := map[string]string{
 		"inputString": base64.StdEncoding.EncodeToString([]byte("yyy")),
 	}
-	data, e := json.Marshal(jsonData)
-	if e != nil {
-		log.Println(e)
+	data, err := json.Marshal(jsonData)
+	if err != nil {
+		log.Println(err)
 	}
-	res2, err3 := client.Post("http://localhost:8081/decode", "application/json", bytes.NewBuffer(data))
-	if err3 != nil {
-		log.Println(err3)
+	res, err = client.Post("http://localhost:8081/decode", "application/json", bytes.NewBuffer(data))
+	if err != nil {
+		log.Println(err)
 	}
-	body2, err4 := io.ReadAll(res2.Body)
-	if err4 != nil {
-		log.Println(err4)
+	body, err = io.ReadAll(res.Body)
+	if err != nil {
+		log.Println(err)
 	}
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
 			log.Println(err)
 		}
-	}(res2.Body)
-	var result struct {
-		OutputString string `json:"outputString"`
-	}
-	er := json.Unmarshal(body2, &result)
-	if er != nil {
-		log.Println(er)
+	}(res.Body)
+	err = json.Unmarshal(body, &result)
+	if err != nil {
+		log.Println(err)
 	}
 	fmt.Println(result.OutputString)
 
-	res3, err5 := client.Get("http://localhost:8081/hard-op")
-	if err5 != nil {
+	res, err = client.Get("http://localhost:8081/hard-op")
+	if err != nil {
 		fmt.Println(false)
-		log.Println(err5)
+		log.Println(err)
 	}
 	fmt.Print(true)
 	fmt.Print(" ")
-	fmt.Print(res3.StatusCode)
+	fmt.Print(res.StatusCode)
 }
