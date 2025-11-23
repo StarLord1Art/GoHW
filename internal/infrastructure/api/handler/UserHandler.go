@@ -1,4 +1,4 @@
-package api
+package handler
 
 import (
 	"GoHW1/internal/application/dto/request"

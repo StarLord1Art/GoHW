@@ -2,6 +2,7 @@ package main
 
 import (
 	"GoHW1/internal/infrastructure/api"
+	"GoHW1/internal/infrastructure/api/handler"
 	"context"
 	"log"
 	"net/http"
@@ -12,21 +13,12 @@ import (
 )
 
 func main() {
-	mux := http.NewServeMux()
-	userHandler := api.UserHandler{}
+	userHandler := handler.UserHandler{}
 	userHandler.InitializeUserStorage()
-	balanceHandler := api.BalanceHandler{}
+	balanceHandler := handler.BalanceHandler{}
 	balanceHandler.InitializeBalanceStorage()
 
-	mux.HandleFunc("POST /user/registration", userHandler.RegisterUser)
-
-	mux.HandleFunc("POST /balance/creation", balanceHandler.CreateBalance)
-
-	mux.HandleFunc("POST /balance/replenishment", balanceHandler.TopUpBalance)
-
-	mux.HandleFunc("POST /balance/transfer", balanceHandler.TransferToBalance)
-
-	mux.HandleFunc("GET /balance", balanceHandler.GetBalance)
+	mux := api.CreateRouting(&userHandler, &balanceHandler)
 
 	server := &http.Server{
 		Addr:    ":8081",
